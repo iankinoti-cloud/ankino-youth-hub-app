@@ -16,6 +16,11 @@ coverage/
 .vite/
 .turbo/
 
+# ── Python venv (for google-genai key testing, etc.) ────────────────────────
+.venv/
+__pycache__/
+*.pyc
+
 # ── Editor / OS ─────────────────────────────────────────────────────────────
 *.local
 .DS_Store
