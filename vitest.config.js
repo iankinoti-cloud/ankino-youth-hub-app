@@ -24,7 +24,10 @@ export default defineConfig({
         'src/__tests__/**',
         'vitest.config.js',
         'vite.config.js',
+        'eslint.config.js',
         'sketch.js',
+        // Azure Functions — Node runtime, tested via integration / smoke-test
+        'api/**',
         // Canvas engine — visual/render, not unit-testable
         'src/canvas/**',
         // App boot — DOM-heavy, covered by E2E (future)
