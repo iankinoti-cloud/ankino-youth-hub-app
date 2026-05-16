@@ -128,7 +128,11 @@ jobs:
           app_location:                    "/"
           api_location:                    "api"
           output_location:                 "dist"
-          skip_app_build:                  true   # we already built above
+          app_build_command:               "npm run build"
+          # NOTE: Oryx runs the build inside an isolated container, which is
+          # cleaner than skip_app_build (which uploaded node_modules and blew
+          # the static-file count limit). The earlier `npm run build` step in
+          # this job stays for fast-fail + bundle-size reporting.
 
       - name: Print deployment URL
         if: success()
