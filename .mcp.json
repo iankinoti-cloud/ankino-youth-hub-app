@@ -1,0 +1,62 @@
+{
+  "mcpServers": {
+
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "GitHub integration — read/write files, manage PRs, issues, releases, trigger GitHub Actions workflows. Required for CI/CD automation of Ankino Youth Hub."
+    },
+
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/khelan/ankino-youth-hub"
+      ],
+      "description": "Filesystem access scoped to this project root. Allows reading/writing all project files during development and CI/CD operations.",
+      "alwaysAllow": [
+        "read_file",
+        "list_directory",
+        "list_files_recursive",
+        "get_file_info"
+      ]
+    },
+
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "description": "Persistent in-session memory. Stores architectural decisions, open issues, and CI/CD context across conversations. Useful for tracking the Ankino Hub build progress."
+    },
+
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Enhanced multi-step reasoning for complex debugging, architecture decisions, and CI/CD pipeline troubleshooting."
+    }
+  },
+
+  "_project": {
+    "name": "ankino-youth-hub",
+    "description": "Kenyan youth tech hub SPA — Vite + Vanilla JS + GSAP + Canvas API. AI chatbot (brain.js), Safaricom/M-PESA knowledge base, opportunities board, startup showcase, events calendar.",
+    "owner": "Ian Kinoti",
+    "powered_by": "Safaricom",
+    "stack": ["vite", "javascript", "gsap", "canvas-api", "custom-nlp"],
+    "repo": "https://github.com/keynotii/digital_invoice",
+    "ci_cd": "github-actions",
+    "deploy_target": "github-pages"
+  },
+
+  "_setup_instructions": {
+    "step1": "Install GitHub MCP: npx @modelcontextprotocol/server-github (needs GITHUB_TOKEN env var)",
+    "step2": "Install Filesystem MCP: npx @modelcontextprotocol/server-filesystem",
+    "step3": "Install Memory MCP: npx @modelcontextprotocol/server-memory",
+    "step4": "Install Sequential Thinking: npx @modelcontextprotocol/server-sequential-thinking",
+    "step5": "Add GITHUB_TOKEN to environment: export GITHUB_TOKEN=your_token",
+    "step6": "Reload Cline / Claude Desktop for servers to activate",
+    "note": "All servers use npx -y so they auto-install on first run. No separate install step needed."
+  }
+}

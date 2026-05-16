@@ -1,0 +1,17 @@
+{
+  "name": "ankino-youth-hub-api",
+  "version": "1.0.0",
+  "description": "Azure Functions API for Ankino Youth Hub (Daraja callbacks + AI proxy)",
+  "main": "src/functions/*.js",
+  "type": "module",
+  "scripts": {
+    "start":  "func start",
+    "build":  "echo 'No build step needed for JS functions'"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

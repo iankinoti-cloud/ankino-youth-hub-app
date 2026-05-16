@@ -1,0 +1,15 @@
+# ════════════════════════════════════════════════════════════════════════════
+#  DISABLED — kept for reference only.
+#
+#  This workflow used to deploy the frontend to GitHub Pages on every push to
+#  main. It is incompatible with the Azure Static Web Apps deploy
+#  (.github/workflows/deploy-azure.yml) because:
+#
+#    1. Two simultaneous deploys cause race conditions in the `dist/` artifact.
+#    2. GitHub Pages cannot serve the Azure Functions API (/api/*) — the
+#       Daraja and AI proxy endpoints would 404 on the Pages mirror.
+#    3. CSP headers from staticwebapp.config.json are not honoured by Pages.
+#
+#  The Azure deploy is the single source of truth. If you need a static-only
+#  preview again, restore this file (rename → .yml) AND remove deploy-azure.yml.
+# ════════════════════════════════════════════════════════════════════════════

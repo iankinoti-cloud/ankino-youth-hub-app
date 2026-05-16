@@ -1,0 +1,37 @@
+# ── Secrets ─────────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ── Build / cache ───────────────────────────────────────────────────────────
+node_modules/
+dist/
+coverage/
+.vite/
+.turbo/
+
+# ── Editor / OS ─────────────────────────────────────────────────────────────
+*.local
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+Thumbs.db
+
+# ── Logs ────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ── Azure Functions local ───────────────────────────────────────────────────
+api/local.settings.json
+api/.func/
+api/bin/
+api/obj/
