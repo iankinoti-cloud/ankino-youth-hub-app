@@ -38,7 +38,19 @@ Same pattern — revoke + regenerate. Don't reuse old values.
 
 ## 4. Push the rotated values to Azure
 
-Run this **once** (replace placeholders with the new values you just generated):
+**Recommended — interactive helper** (silent prompts, no values in shell history,
+no values written to disk):
+
+```bash
+./scripts/set-secrets.sh
+```
+
+The helper prompts you for each rotated secret, validates basic format, then
+calls `az staticwebapp appsettings set` for you. It also (re)asserts the
+non-secret Daraja config (`DARAJA_PASSKEY`, `DARAJA_SHORTCODE`, `DARAJA_ENV`,
+and the three `DARAJA_*_URL` callbacks) which were missing from SWA settings.
+
+**Manual fallback** — only if you can't run the helper:
 
 ```bash
 az staticwebapp appsettings set \
@@ -46,6 +58,7 @@ az staticwebapp appsettings set \
   --resource-group ankino-youth-hub-rg \
   --setting-names \
     ANTHROPIC_API_KEY='sk-ant-api03-NEW_VALUE' \
+    GEMINI_API_KEY='AIza_NEW_VALUE' \
     DARAJA_CONSUMER_KEY='NEW_CONSUMER_KEY' \
     DARAJA_CONSUMER_SECRET='NEW_CONSUMER_SECRET' \
     DARAJA_PASSKEY='bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919' \
@@ -53,6 +66,8 @@ az staticwebapp appsettings set \
     DARAJA_ENV='sandbox' \
     DARAJA_CALLBACK_URL='https://<YOUR-SWA>.azurestaticapps.net/api/mpesa/callback'
 ```
+
+> ⚠️ The manual form puts the secrets in your shell history. Prefer the helper.
 
 This stores them encrypted in Azure and exposes them to the Functions runtime
 as `process.env.*`. The values are **never** visible to the browser.
