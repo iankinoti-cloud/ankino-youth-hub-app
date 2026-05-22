@@ -221,6 +221,8 @@ function _friendlyError(code) {
     'auth/cancelled-popup-request': 'Another sign-in is in progress.',
     'auth/network-request-failed':  'Network error. Check your connection and try again.',
     'auth/too-many-requests':       'Too many attempts. Please wait a moment.',
+    'auth/unauthorized-domain':     'This domain is not authorised for sign-in. Please contact support.',
+    'auth/invalid-api-key':         'App configuration error. Please contact support.',
   };
   return map[code] ?? `Sign-in failed (${code ?? 'unknown'}). Please try again.`;
 }
