@@ -142,10 +142,10 @@ jobs:
           app_location:                    "/"
           api_location:                    "api"
           output_location:                 "dist"
-          skip_app_build:                  true
-          # NOTE: We build in the step above (with Firebase secrets injected).
-          # skip_app_build uploads the pre-built dist directly, ensuring
-          # VITE_FIREBASE_* vars are correctly baked into the bundle.
+          app_build_command:               "npm run build"
+          # NOTE: VITE_FIREBASE_* vars are set as Azure SWA Application Settings,
+          # which are automatically passed to Oryx as env vars during build,
+          # ensuring Firebase config is correctly baked into the bundle.
 
       - name: Print deployment URL
         if: success()
