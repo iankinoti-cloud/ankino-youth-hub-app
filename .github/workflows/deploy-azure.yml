@@ -139,13 +139,12 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token:                      ${{ secrets.GITHUB_TOKEN }}
           action:                          "upload"
-          app_location:                    "/"
+          app_location:                    "dist"
           api_location:                    "api"
-          output_location:                 "dist"
-          app_build_command:               "npm run build"
-          # NOTE: VITE_FIREBASE_* vars are set as Azure SWA Application Settings,
-          # which are automatically passed to Oryx as env vars during build,
-          # ensuring Firebase config is correctly baked into the bundle.
+          output_location:                 ""
+          skip_app_build:                  true
+          # We already ran `npm run build` above with VITE_FIREBASE_* secrets.
+          # skip_app_build prevents Oryx from rebuilding without those secrets.
 
       - name: Print deployment URL
         if: success()
