@@ -32,10 +32,15 @@ export default defineConfig({
         'src/canvas/**',
         // App boot — DOM-heavy, covered by E2E (future)
         'src/main.js',
+        // Auth modal — pure DOM rendering, covered by E2E (future)
+        'src/components/auth-modal.js',
         // Chat UI — pure DOM rendering, covered by E2E (future)
         'src/components/chatbot.js',
         // Static data arrays — no logic to test
         'src/data/content.js',
+        // Firebase wrappers — require live Firebase, tested via integration
+        'src/lib/auth.js',
+        'src/lib/firebase.js',
         // Batch queue — infrastructure layer, covered when backend is added
         'src/lib/batch.js',
       ],
