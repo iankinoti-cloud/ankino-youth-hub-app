@@ -11,11 +11,7 @@ import {
   signOut,
   onAuthStateChange,
   PROFILES,
-  currentUser,
-  currentProfile,
   isSignedIn,
-  getUserName,
-  getUserPhoto,
 } from '../lib/auth.js';
 
 // ── Inject modal HTML into body ───────────────────────────

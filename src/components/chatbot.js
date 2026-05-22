@@ -43,7 +43,7 @@ async function callGemini(userInput) {
 
   // Log cache savings in dev
   if (import.meta.env.DEV && data.cachedTokens) {
-    console.info(`[Chatbot] Gemini cached tokens: ${data.cachedTokens}`);
+    console.debug(`[Chatbot] Gemini cached tokens: ${data.cachedTokens}`);
   }
 
   // Store the AI reply in brain.js context so history stays consistent
@@ -166,7 +166,7 @@ function renderBotMessage(container, response, onChipClick) {
 }
 
 // ── Render an error message (visible to user) ─────────────
-function renderErrorMessage(container, message) {
+function _renderErrorMessage(container, message) {
   const wrapper = document.createElement('div');
   wrapper.className = 'chat-msg-wrapper';
   const div = document.createElement('div');
@@ -203,7 +203,7 @@ function hideTyping() {
 }
 
 // ── Simulate realistic typing delay (fallback path only) ──
-function typingDelay(responseText) {
+function _typingDelay(responseText) {
   const words = responseText.split(' ').length;
   return Math.min(400 + words * 18, 2200); // scale with length, cap at 2.2s
 }
