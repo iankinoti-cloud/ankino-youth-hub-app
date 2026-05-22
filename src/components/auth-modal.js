@@ -19,7 +19,7 @@ import {
 } from '../lib/auth.js';
 
 // ── Inject modal HTML into body ───────────────────────────
-function injectAuthModal() {
+export function injectAuthModal() {
   if (document.getElementById('auth-modal-overlay')) return; // already mounted
 
   const overlay = document.createElement('div');
@@ -271,6 +271,31 @@ export function initAuthNavbar() {
   // Logout button
   logoutBtn?.addEventListener('click', async () => {
     await signOut();
+  });
+}
+
+// ── Deep-link: open modal with a pre-selected persona ────────────────────────
+/**
+ * Called when the page is loaded with ?persona=developer|creator|gamer|founder
+ * Skips profile-selection (Step 1) and lands directly on the OAuth provider step.
+ */
+export function openAuthModalForPersona(profile) {
+  if (isSignedIn()) return;                  // already authenticated — nothing to do
+  if (!PROFILES[profile]) return;            // unknown persona key — ignore
+
+  _selectedProfile = profile;
+  const meta = PROFILES[profile];
+
+  openAuthModal();
+  requestAnimationFrame(() => {
+    document.getElementById('auth-selected-profile-tag').textContent = `// ${meta.label.toUpperCase()}`;
+    document.getElementById('auth-provider-subtitle').textContent =
+      `Joining as a ${meta.label} — ${meta.tagline}`;
+    // Highlight the matching profile card
+    document.querySelectorAll('.auth-profile-card').forEach((c) => {
+      c.classList.toggle('selected', c.dataset.profile === profile);
+    });
+    _goToStep('provider');
   });
 }
 

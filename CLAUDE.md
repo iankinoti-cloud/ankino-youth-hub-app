@@ -9,7 +9,7 @@
 ## 🌍 What This Is
 
 **Ankino Youth Hub** is a premium single-page application for Kenya's youth tech ecosystem.
-- **Founded by**: Ian Kinoti
+- **Founded by**: ANKINO DEVELOPERS
 - **Powered by**: Safaricom
 - **Mission**: Connect young Kenyan Developers, Creators, Gamers & Founders to hackathons, internships, scholarships, startup resources, and the Safaricom/M-PESA ecosystem.
 

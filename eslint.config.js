@@ -40,6 +40,8 @@ export default [
         URL:         'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame:  'readonly',
+        URLSearchParams:       'readonly',
+        history:               'readonly',
         // Vite globals
         'import.meta': 'readonly',
         // Node / config-file globals

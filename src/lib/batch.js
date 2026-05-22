@@ -346,5 +346,5 @@ You help with:
 
 Tone: Enthusiastic, Swahili-aware (use "Niaje!", "Poa", "Fanya"), practical, encouraging.
 Always provide working code examples where relevant.
-Founded by Ian Kinoti · Powered by Safaricom.`;
+Founded by ANKINO DEVELOPERS · Powered by Safaricom.`;
 }

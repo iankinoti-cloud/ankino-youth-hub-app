@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { EcosystemCanvas, SectionCanvas, MPESACanvas } from './canvas/ecosystem.js';
 import { OPPORTUNITIES, STARTUPS, EVENTS } from './data/content.js';
 import { initChatbot, updateChatbotProfile } from './components/chatbot.js';
-import { initAuthNavbar, initAudienceNodeAuth } from './components/auth-modal.js';
+import { injectAuthModal, initAuthNavbar, initAudienceNodeAuth, openAuthModalForPersona } from './components/auth-modal.js';
 import { onAuthStateChange } from './lib/auth.js';
 import {
   joinHub,
@@ -523,8 +523,37 @@ function initNewsletter() {
   });
 }
 
+// ── Persona deep-link (?persona=developer|creator|gamer|founder) ─────────────
+/**
+ * Reads the `?persona=` query-string parameter on page load.
+ * If valid, opens the auth modal pre-set to that persona's provider step,
+ * then cleans the URL so it doesn't re-trigger on refresh.
+ *
+ * Shareable links:
+ *   https://ankino.app/?persona=developer
+ *   https://ankino.app/?persona=creator
+ *   https://ankino.app/?persona=gamer
+ *   https://ankino.app/?persona=founder
+ */
+function checkPersonaDeepLink() {
+  const params  = new URLSearchParams(window.location.search);
+  const persona = params.get('persona')?.toLowerCase();
+  const valid   = ['developer', 'creator', 'gamer', 'founder'];
+
+  if (!persona || !valid.includes(persona)) return;
+
+  // Strip the param from the URL bar before opening the modal
+  history.replaceState(null, '', window.location.pathname);
+
+  // openAuthModalForPersona guards against already-signed-in users internally
+  openAuthModalForPersona(persona);
+}
+
 // ── Boot ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // ── Auth modal must be injected FIRST — everything else depends on it ─
+  injectAuthModal();
+
   initCanvases();
   initNavbar();
   initOpportunities();
@@ -537,9 +566,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initRegisterInterestModal();
   initNewsletter();
 
-  // ── Auth: navbar + audience node clicks ───────────────
+  // ── Auth: navbar + audience node clicks + deep-links ─
   initAuthNavbar();          // sets up Sign In button, user chip, logout
   initAudienceNodeAuth();    // makes audience nodes open the auth modal
+  checkPersonaDeepLink();    // handles ?persona=developer|creator|gamer|founder
 
   // When profile changes, update chatbot persona
   onAuthStateChange((_user, profile) => {

@@ -144,7 +144,7 @@ line.fill.solid()
 line.fill.fore_color.rgb = C_GREEN
 line.line.fill.background()
 
-add_text(s1, "Submitted by: Ian Kinoti   ·   kinotiian12@gmail.com   ·   github.com/iankinoti-cloud",
+add_text(s1, "Submitted by: ANKINO DEVELOPERS   ·   kinotiian12@gmail.com   ·   github.com/iankinoti-cloud",
          Inches(0.5), Inches(4.8), Inches(12.4), Inches(0.45),
          font_size=13, color=C_MUTED)
 
@@ -405,7 +405,7 @@ note_box(s9, "Impact is already happening — Firebase Firestore shows live memb
 s10 = new_slide()
 section_header(s10, "// 09 — TEAM & CREDENTIALS", "Who Is Building This")
 
-add_text(s10, "Ian Kinoti — Founder & Lead Engineer",
+add_text(s10, "ANKINO DEVELOPERS — Founder & Lead Engineer",
          Inches(0.6), Inches(1.75), Inches(12), Inches(0.6),
          font_size=22, bold=True, color=C_WHITE)
 

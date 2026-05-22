@@ -42,7 +42,7 @@
   "_project": {
     "name": "ankino-youth-hub",
     "description": "Kenyan youth tech hub SPA — Vite + Vanilla JS + GSAP + Canvas API. AI chatbot (brain.js), Safaricom/M-PESA knowledge base, opportunities board, startup showcase, events calendar.",
-    "owner": "Ian Kinoti",
+    "owner": "ANKINO DEVELOPERS",
     "powered_by": "Safaricom",
     "stack": ["vite", "javascript", "gsap", "canvas-api", "custom-nlp"],
     "repo": "https://github.com/keynotii/digital_invoice",

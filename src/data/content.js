@@ -263,8 +263,8 @@ export const CHATBOT_RESPONSES = {
     '🎨 Creators thrive here! The **Decode Creative Residency** is a paid 3-month program for digital artists, motion designers, and UI/UX innovators. Also check out **MatStream** — a startup building for Nairobi\'s music scene!',
   ],
   about: [
-    '🌍 **Ankino Youth Hub** is a digital ecosystem built for Kenya\'s next generation — Developers, Creators, Gamers & Startup Founders.\n\nFounded by **Ian Kinoti** and powered by Safaricom\'s network, the hub connects youth talent to hackathons, internships, scholarships, startup resources, and Africa\'s most vibrant tech community.',
-    '🌱 **Ankino Youth Hub** was built by **Ian Kinoti** with a simple mission: give every young Kenyan creator, developer, gamer, and founder a launchpad. Powered by Safaricom\'s infrastructure.',
+    '🌍 **Ankino Youth Hub** is a digital ecosystem built for Kenya\'s next generation — Developers, Creators, Gamers & Startup Founders.\n\nFounded by **ANKINO DEVELOPERS** and powered by Safaricom\'s network, the hub connects youth talent to hackathons, internships, scholarships, startup resources, and Africa\'s most vibrant tech community.',
+    '🌱 **Ankino Youth Hub** was built by **ANKINO DEVELOPERS** with a simple mission: give every young Kenyan creator, developer, gamer, and founder a launchpad. Powered by Safaricom\'s infrastructure.',
   ],
   apply: [
     '✅ To apply for any opportunity:\n1. Click the opportunity card in the **Opportunities** section\n2. Fill in the application form\n3. Submit before the deadline\n\nFor general membership, join for free at the top of the page. Need help with a specific application? Tell me which one!',

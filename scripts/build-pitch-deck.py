@@ -120,7 +120,7 @@ line.fill.fore_color.rgb = C_GREEN
 line.line.fill.background()
 
 # Bottom details
-add_text(s1, "Founded by Ian Kinoti     |     kinotiian12@gmail.com     |     github.com/iankinoti-cloud",
+add_text(s1, "Founded by ANKINO DEVELOPERS     |     kinotiian12@gmail.com     |     github.com/iankinoti-cloud",
          Inches(0.5), Inches(4.85), Inches(12.4), Inches(0.5),
          font_size=13, color=C_MUTED)
 
@@ -299,7 +299,7 @@ s8 = new_slide()
 add_text(s8, "// 07 — TEAM & ASK",
          Inches(0.6), Inches(0.25), Inches(12), Inches(0.4),
          font_size=11, color=C_GREEN)
-add_text(s8, "Ian Kinoti — Founder and Engineer",
+add_text(s8, "ANKINO DEVELOPERS — Founder and Engineer",
          Inches(0.6), Inches(0.65), Inches(12), Inches(0.9),
          font_size=34, bold=True, color=C_GREEN)
 
