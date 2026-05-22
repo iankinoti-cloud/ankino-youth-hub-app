@@ -64,6 +64,13 @@ jobs:
           VITE_BUILD_TIME:     ${{ github.event.head_commit.timestamp }}
           VITE_API_BASE:       /api
           VITE_APP_NAME:       "Ankino Youth Hub"
+          VITE_FIREBASE_API_KEY:             ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN:         ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID:          ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET:      ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID:              ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID:      ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
 
       - name: Inject build metadata
         run: |
@@ -112,6 +119,13 @@ jobs:
           VITE_APP_VERSION:    ${{ github.sha }}
           VITE_API_BASE:       /api
           VITE_APP_NAME:       "Ankino Youth Hub"
+          VITE_FIREBASE_API_KEY:             ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN:         ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID:          ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET:      ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID:              ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID:      ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
 
       - name: Inject build metadata
         run: |
@@ -128,11 +142,10 @@ jobs:
           app_location:                    "/"
           api_location:                    "api"
           output_location:                 "dist"
-          app_build_command:               "npm run build"
-          # NOTE: Oryx runs the build inside an isolated container, which is
-          # cleaner than skip_app_build (which uploaded node_modules and blew
-          # the static-file count limit). The earlier `npm run build` step in
-          # this job stays for fast-fail + bundle-size reporting.
+          skip_app_build:                  true
+          # NOTE: We build in the step above (with Firebase secrets injected).
+          # skip_app_build uploads the pre-built dist directly, ensuring
+          # VITE_FIREBASE_* vars are correctly baked into the bundle.
 
       - name: Print deployment URL
         if: success()
