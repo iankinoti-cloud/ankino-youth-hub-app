@@ -21,6 +21,7 @@
 ankino-youth-hub/
 ├── index.html                    # Single HTML entry point
 ├── staticwebapp.config.json      # Azure SWA routing, headers, CSP
+├── firestore.rules               # Firestore Security Rules (deploy via Firebase CLI)
 ├── src/
 │   ├── main.js                   # App boot — inits all sections
 │   ├── style.css                 # Global styles (dark theme, Orbitron font)
@@ -38,26 +39,34 @@ ankino-youth-hub/
 │   │       ├── common.js         # Programming basics, web concepts, DevOps
 │   │       └── whatisdict.js     # "What is X?" semantic dictionary (extracted from brain.js)
 │   └── lib/
+│       ├── firebase.js           # Firestore data helpers (members, newsletter, registrations)
+│       ├── auth.js               # Firebase Auth — Google/GitHub OAuth, profile state
 │       ├── cache.js              # LRU response cache + Anthropic/Gemini prompt cache utils
 │       └── batch.js              # Batch API queue, prewarm, analytics sink
 ├── api/                          # Azure Functions (v4 model) — deployed with SWA
 │   ├── package.json              # @azure/functions ^4.5.0
 │   ├── host.json                 # Functions runtime config
 │   └── src/functions/
+│       ├── mpesa-stk-push.js     # POST /api/mpesa/stk-push  (STK Push initiator)
 │       ├── mpesa-callback.js     # POST /api/mpesa/callback|b2c/result|b2c/timeout
 │       └── ai-proxy.js           # POST /api/ai/chat  GET /api/ai/health
 ├── scripts/
-│   └── azure-setup.sh            # One-shot Azure provisioning script
+│   ├── azure-setup.sh            # One-shot Azure provisioning script
+│   ├── azure-finish.sh           # Post-provision: inject SWA URL into env + secrets
+│   ├── set-secrets.sh            # Interactive: push rotated secrets to Azure SWA
+│   ├── smoke-test.sh             # Post-deploy health check (site + API + optional STK)
+│   └── ROTATE_SECRETS.md         # Secret rotation + Firebase key restriction runbook
 ├── .mcp.json                     # MCP server config (GitHub, filesystem, memory, sequential-thinking)
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                # CI: lint → test → build (triggers on push/PR)
-│       ├── deploy.yml            # CD: legacy GitHub Pages (kept for reference)
-│       └── deploy-azure.yml      # CD: lint→test→build→Azure SWA deploy (ACTIVE)
+│       ├── ci.yml                # CI gate: lint → test → build (all branches/PRs) ← ACTIVE
+│       ├── deploy-azure.yml      # CD: lint→test→build→Azure SWA deploy (main only) ← ACTIVE
+│       └── deploy.yml.disabled   # Legacy GitHub Pages deploy (kept for reference)
 ├── vitest.config.js              # Test config (jsdom, coverage thresholds, reporters)
 ├── eslint.config.js              # ESLint flat config (v9+)
 ├── vite.config.js                # Vite config (port 3000, dist output)
-├── .env.example                  # All env var templates (copy to .env)
+├── .env.example                  # Env var TEMPLATES only — no real values (git-committed)
+├── .env                          # Real local values — NEVER commit (git-ignored)
 └── CLAUDE.md                     # This file
 ```
 
@@ -93,7 +102,8 @@ GitHub main push
       └── Job 2: Azure Static Web Apps deploy
             ├── dist/          → CDN edge nodes (global)
             └── api/           → Azure Functions (consumption plan)
-                    ├── POST /api/mpesa/callback
+                    ├── POST /api/mpesa/stk-push      ← initiate STK Push payment
+                    ├── POST /api/mpesa/callback       ← Daraja payment result webhook
                     ├── POST /api/mpesa/b2c/result
                     ├── POST /api/mpesa/b2c/timeout
                     ├── POST /api/ai/chat

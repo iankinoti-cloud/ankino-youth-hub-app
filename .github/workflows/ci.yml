@@ -1,121 +1,101 @@
 name: CI — Lint · Test · Build
 
+# ── Standalone CI gate ─────────────────────────────────────────────────────
+# Runs on every push and PR to catch issues early, independently of the
+# full CD pipeline (deploy-azure.yml). Prevents broken code from landing
+# on main or develop branches.
+# ──────────────────────────────────────────────────────────────────────────
+
 on:
   push:
-    branches: [main, develop, "feature/**", "fix/**"]
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "fix/**"
+      - "chore/**"
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+      - develop
 
-# Cancel in-progress CI runs on new push to same branch
+# Cancel any in-progress run for the same branch/PR on new push
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # ──────────────────────────────────────────────────────────
-  #  Job 1: Lint
-  # ──────────────────────────────────────────────────────────
-  lint:
-    name: ESLint
+  ci:
+    name: Lint · Test · Build
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Node.js ───────────────────────────────────────────────────────────
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
-      - name: Install dependencies
+      # ── Frontend deps ─────────────────────────────────────────────────────
+      - name: Install frontend dependencies
         run: npm ci
 
-      - name: Run ESLint
+      # ── Lint ──────────────────────────────────────────────────────────────
+      - name: Lint (ESLint)
         run: npm run lint
 
-  # ──────────────────────────────────────────────────────────
-  #  Job 2: Unit Tests
-  # ──────────────────────────────────────────────────────────
-  test:
-    name: Vitest Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run unit tests
+      # ── Unit tests + coverage ─────────────────────────────────────────────
+      - name: Unit tests + coverage
         run: npm run test:ci
+        env:
+          # Provide stub Firebase env vars so Vite/Vitest doesn't complain
+          VITE_FIREBASE_API_KEY: stub
+          VITE_FIREBASE_AUTH_DOMAIN: stub.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: stub
+          VITE_FIREBASE_STORAGE_BUCKET: stub.appspot.com
+          VITE_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+          VITE_FIREBASE_APP_ID: "1:000000000000:web:stub"
+          VITE_FIREBASE_MEASUREMENT_ID: G-STUB
 
-      - name: Upload coverage report
+      # ── Upload coverage report ────────────────────────────────────────────
+      - name: Upload coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: coverage-report
+          name: coverage-${{ github.sha }}
           path: coverage/
           retention-days: 14
 
-  # ──────────────────────────────────────────────────────────
-  #  Job 3: Build
-  # ──────────────────────────────────────────────────────────
-  build:
-    name: Vite Build
-    runs-on: ubuntu-latest
-    needs: [lint, test]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build production bundle
+      # ── Production build ──────────────────────────────────────────────────
+      - name: Build Vite bundle
         run: npm run build
+        env:
+          NODE_ENV: production
+          VITE_APP_NAME: "Ankino Youth Hub"
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_API_BASE: /api
+          # Stub Firebase vars so the build doesn't fail without secrets
+          VITE_FIREBASE_API_KEY: stub
+          VITE_FIREBASE_AUTH_DOMAIN: stub.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: stub
+          VITE_FIREBASE_STORAGE_BUCKET: stub.appspot.com
+          VITE_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+          VITE_FIREBASE_APP_ID: "1:000000000000:web:stub"
+          VITE_FIREBASE_MEASUREMENT_ID: G-STUB
 
-      - name: Check bundle size
+      # ── Bundle size report ────────────────────────────────────────────────
+      - name: Bundle size report
         run: |
-          echo "=== Bundle size report ==="
+          echo "=== Bundle sizes ==="
           du -sh dist/
-          find dist -name "*.js" -exec du -h {} \; | sort -rh | head -10
+          echo "--- JS files ---"
+          find dist -name "*.js"  -exec du -h {} \; | sort -rh | head -10
+          echo "--- CSS files ---"
           find dist -name "*.css" -exec du -h {} \;
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-${{ github.sha }}
-          path: dist/
-          retention-days: 7
-
-  # ──────────────────────────────────────────────────────────
-  #  Job 4: CI Summary
-  # ──────────────────────────────────────────────────────────
-  ci-summary:
-    name: CI Summary
-    runs-on: ubuntu-latest
-    needs: [lint, test, build]
-    if: always()
-    steps:
-      - name: CI Result
-        run: |
-          echo "Lint:  ${{ needs.lint.result }}"
-          echo "Test:  ${{ needs.test.result }}"
-          echo "Build: ${{ needs.build.result }}"
-          if [[ "${{ needs.lint.result }}" == "failure" || \
-                "${{ needs.test.result }}" == "failure" || \
-                "${{ needs.build.result }}" == "failure" ]]; then
-            echo "❌ CI failed — check individual job logs above"
-            exit 1
-          fi
-          echo "✅ All CI checks passed"

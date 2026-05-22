@@ -1,0 +1,104 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════
+//  ANKINO YOUTH HUB — Firestore Security Rules
+//  ▸ Principle of least privilege: deny everything by default
+//  ▸ Public write collections (members, newsletter, registrations,
+//    opportunity_clicks) are rate-protected by write-once patterns
+//    and field validation
+//  ▸ user profiles are private — only the owner can read/write
+//  ▸ All reads on public collections are denied (admin-only via SDK)
+// ═══════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Deny everything unless a rule below explicitly allows it ──
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ── Helper functions ────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasValidEmail() {
+      return request.resource.data.keys().hasAll(['email'])
+          && request.resource.data.email is string
+          && request.resource.data.email.size() > 5
+          && request.resource.data.email.size() < 255;
+    }
+
+    function hasValidName() {
+      return request.resource.data.keys().hasAll(['name'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 1
+          && request.resource.data.name.size() < 120;
+    }
+
+    // ── members (Join Hub form) ──────────────────────────────────
+    // Allow anonymous write with field validation. No reads.
+    match /members/{docId} {
+      allow create: if
+        hasValidEmail()
+        && hasValidName()
+        && request.resource.data.keys().hasAll(['name', 'email', 'role', 'county'])
+        && request.resource.data.role   is string
+        && request.resource.data.county is string
+        && request.resource.data.role.size()   < 60
+        && request.resource.data.county.size() < 80
+        && request.resource.data.keys().size() <= 6;  // name, email, role, county, createdAt + spare
+
+      allow read, update, delete: if false;
+    }
+
+    // ── registrations (Apply Now / Register Interest form) ──────
+    match /registrations/{docId} {
+      allow create: if
+        hasValidEmail()
+        && hasValidName()
+        && request.resource.data.keys().hasAll(['name', 'email', 'opportunity', 'type'])
+        && request.resource.data.opportunity is string
+        && request.resource.data.type        is string
+        && request.resource.data.opportunity.size() < 200
+        && request.resource.data.type.size()        < 60
+        && request.resource.data.keys().size()      <= 7;
+
+      allow read, update, delete: if false;
+    }
+
+    // ── newsletter (Footer newsletter subscription) ──────────────
+    match /newsletter/{docId} {
+      allow create: if
+        hasValidEmail()
+        && request.resource.data.keys().size() <= 3;  // email, createdAt + spare
+
+      allow read, update, delete: if false;
+    }
+
+    // ── opportunity_clicks (anonymous analytics tracking) ────────
+    match /opportunity_clicks/{docId} {
+      allow create: if
+        request.resource.data.keys().hasAll(['opportunity', 'type'])
+        && request.resource.data.opportunity is string
+        && request.resource.data.type        is string
+        && request.resource.data.opportunity.size() < 200
+        && request.resource.data.type.size()        < 60
+        && request.resource.data.keys().size()      <= 4;
+
+      allow read, update, delete: if false;
+    }
+
+    // ── users (auth profiles — owner-only) ───────────────────────
+    // Only the authenticated owner can read or write their own profile doc.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+  }
+}

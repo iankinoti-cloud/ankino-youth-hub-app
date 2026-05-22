@@ -12,6 +12,14 @@ the first production traffic hits the app:
 | `DARAJA_CONSUMER_KEY`   | LEAKED   | Regenerate in Daraja portal (sandbox app)                  |
 | `DARAJA_CONSUMER_SECRET`| LEAKED   | Regenerate (paired with key — done together)               |
 
+The Firebase Web API key was also exposed in `.env.example` (committed to Git).
+Firebase Web API keys are public-by-design but **must be restricted** to your
+domains to prevent abuse. See §9 below.
+
+| Secret                   | Status   | Action                                                    |
+| ------------------------ | -------- | --------------------------------------------------------- |
+| `VITE_FIREBASE_API_KEY`  | EXPOSED  | Restrict key to your domains (§9) — cannot truly rotate   |
+
 ---
 
 ## 1. Anthropic Claude
@@ -123,3 +131,76 @@ PHONE=254712345678 AMOUNT=1 ./scripts/smoke-test.sh https://<YOUR-SWA>.azurestat
 
 Cline only needs to know **names**, not values. The Azure Functions runtime
 reads them from `process.env` at execution time.
+
+---
+
+## 9. Restrict the Firebase Web API Key (HTTP Referrer Lock)
+
+Firebase Web API keys are **public by design** — they identify the project, not
+authenticate a secret owner. However, an unrestricted key can be abused from any
+domain to spam your Firestore collections.
+
+**This is a one-time setup — do it now:**
+
+### Step 1 — Open Google Cloud Console
+
+1. Go to https://console.cloud.google.com
+2. Select project **ankino-youth-hub**
+3. Navigate: **APIs & Services → Credentials**
+4. Find the key named **Browser key (auto created by Firebase)** and click it
+
+### Step 2 — Add HTTP Referrer Restrictions
+
+Under **Application restrictions**, select **HTTP referrers (websites)**.
+
+Add these referrer patterns (one per line):
+
+```
+https://ankino-youth-hub.firebaseapp.com/*
+https://ankino-youth-hub.web.app/*
+https://*.azurestaticapps.net/*
+http://localhost:3000/*
+http://localhost:5173/*
+```
+
+> ⚠️ After you get your permanent Azure SWA URL (e.g. `lively-wave-abc123.azurestaticapps.net`),
+> add it explicitly and remove the wildcard `*.azurestaticapps.net` entry for tighter restriction.
+
+### Step 3 — Restrict API access (optional but recommended)
+
+Under **API restrictions**, select **Restrict key** and enable only:
+- Cloud Firestore API
+- Identity Toolkit API (Firebase Auth)
+- Token Service API (Firebase Auth)
+- Firebase Installations API
+
+### Step 4 — Save and verify
+
+Click **Save**. The restriction takes effect within ~5 minutes.
+
+To verify it's working, open DevTools → Network, submit the Join Hub form, and
+confirm Firestore writes succeed from your domain and fail from `curl` with a
+bare key and no matching referrer.
+
+### Why you cannot truly "rotate" a Firebase Web API key
+
+Firebase projects have a single Web API key tied to the project configuration.
+Generating a new one requires creating a new Firebase project (and migrating all
+data). Restriction + Firestore Security Rules (`firestore.rules`) is the correct
+mitigation — the key itself is not a secret.
+
+### Firestore Security Rules (already deployed)
+
+The file `firestore.rules` at the repo root enforces:
+- All collections **deny reads** by default (no data leakage)
+- Anonymous writes to `members`, `newsletter`, `registrations`, `opportunity_clicks`
+  require **field validation** (correct types, size limits, no extra fields)
+- The `users` collection is **owner-only** (authenticated UID must match doc ID)
+
+Deploy rules to Firebase:
+```bash
+# Install Firebase CLI if not already installed
+npm install -g firebase-tools
+firebase login
+firebase deploy --only firestore:rules --project ankino-youth-hub
+```

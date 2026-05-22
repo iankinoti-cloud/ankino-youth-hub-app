@@ -7,7 +7,7 @@
 //    so UI never blocks on a failed DB call
 // ═══════════════════════════════════════════════════════════
 
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import {
   getFirestore,
   collection,
@@ -26,14 +26,19 @@ const firebaseConfig = {
   measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+// ── Singleton init — safe to call from both firebase.js and auth.js ──
+// Uses getApps() guard so Firebase is only initialised once per page load,
+// regardless of module evaluation order.
+function getFirebaseApp() {
+  return getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
+}
+
 // ── Initialise once (module singleton) ───────────────────
-let app;
 let db;
 
 function getDB() {
   if (!db) {
-    app = initializeApp(firebaseConfig);
-    db  = getFirestore(app);
+    db = getFirestore(getFirebaseApp());
   }
   return db;
 }
