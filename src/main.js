@@ -6,23 +6,59 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { EcosystemCanvas, SectionCanvas, MPESACanvas } from './canvas/ecosystem.js';
 import { OPPORTUNITIES, STARTUPS, EVENTS } from './data/content.js';
-import { initChatbot } from './components/chatbot.js';
+import { initChatbot, updateChatbotProfile } from './components/chatbot.js';
+import { initAuthNavbar, initAudienceNodeAuth } from './components/auth-modal.js';
+import { onAuthStateChange } from './lib/auth.js';
+import {
+  joinHub,
+  registerInterest,
+  subscribeNewsletter,
+  trackOpportunityClick,
+} from './lib/firebase.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ── Modal helpers ─────────────────────────────────────────
+function openModal(overlayId) {
+  const el = document.getElementById(overlayId);
+  if (!el) return;
+  el.setAttribute('aria-hidden', 'false');
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(overlayId) {
+  const el = document.getElementById(overlayId);
+  if (!el) return;
+  el.setAttribute('aria-hidden', 'true');
+  el.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function setFormStatus(statusId, type, message) {
+  const el = document.getElementById(statusId);
+  if (!el) return;
+  el.className = `form-status ${type}`;
+  el.textContent = message;
+}
+
+function clearFormStatus(statusId) {
+  const el = document.getElementById(statusId);
+  if (!el) return;
+  el.className = 'form-status';
+  el.textContent = '';
+}
+
 // ── Init canvas animations ────────────────────────────────
 function initCanvases() {
-  // Hero
   const heroCanvas = document.getElementById('hero-canvas');
   if (heroCanvas) new EcosystemCanvas(heroCanvas);
 
-  // Section canvases
   document.querySelectorAll('.section-canvas').forEach((el) => {
     const theme = el.dataset.section || 'default';
     new SectionCanvas(el, theme);
   });
 
-  // M-PESA canvas
   const mpesaCanvas = document.getElementById('mpesa-canvas');
   if (mpesaCanvas) new MPESACanvas(mpesaCanvas);
 }
@@ -34,7 +70,6 @@ function initNavbar() {
     navbar.classList.toggle('scrolled', window.scrollY > 60);
   });
 
-  // Hamburger (mobile)
   const hamburger = document.getElementById('nav-hamburger');
   const navLinks = document.querySelector('.nav-links');
   hamburger?.addEventListener('click', () => {
@@ -65,11 +100,27 @@ function initOpportunities() {
         <div class="opp-card-tags">
           ${item.tags.map((t) => `<span>${t}</span>`).join('')}
         </div>
-        <a href="${item.link}" class="opp-card-cta">Apply Now →</a>
+        <button class="opp-card-cta apply-btn"
+          data-title="${item.title}"
+          data-type="${type}">Apply Now</button>
       `;
+
+      // Track click + open register interest modal
+      const btn = card.querySelector('.apply-btn');
+      btn.addEventListener('click', () => {
+        trackOpportunityClick(item.title, type);
+        document.getElementById('ri-title').textContent = item.title;
+        document.getElementById('ri-opp-title').value = item.title;
+        document.getElementById('ri-opp-type').value = type;
+        clearFormStatus('register-interest-status');
+        document.getElementById('register-interest-form').reset();
+        document.getElementById('ri-opp-title').value = item.title;
+        document.getElementById('ri-opp-type').value = type;
+        openModal('register-interest-overlay');
+      });
+
       grid.appendChild(card);
 
-      // Animate in
       gsap.fromTo(card,
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, duration: 0.5, delay: i * 0.08, ease: 'power2.out' }
@@ -100,7 +151,6 @@ function initShowcase() {
   const perPage = window.innerWidth < 680 ? 1 : window.innerWidth < 900 ? 2 : 3;
   const pageCount = Math.ceil(STARTUPS.length / perPage);
 
-  // Build cards
   STARTUPS.forEach((startup) => {
     const card = document.createElement('div');
     card.className = 'startup-card';
@@ -118,7 +168,6 @@ function initShowcase() {
     track.appendChild(card);
   });
 
-  // Build dots
   for (let i = 0; i < pageCount; i++) {
     const dot = document.createElement('button');
     dot.className = `showcase-dot${i === 0 ? ' active' : ''}`;
@@ -130,7 +179,7 @@ function initShowcase() {
   function goTo(page) {
     currentPage = Math.max(0, Math.min(page, pageCount - 1));
     const cards = track.querySelectorAll('.startup-card');
-    const cardWidth = cards[0]?.offsetWidth + 24 || 0; // gap
+    const cardWidth = cards[0]?.offsetWidth + 24 || 0;
     gsap.to(track, { x: -currentPage * perPage * cardWidth, duration: 0.5, ease: 'power2.out' });
     dotsEl.querySelectorAll('.showcase-dot').forEach((d, i) => {
       d.classList.toggle('active', i === currentPage);
@@ -153,7 +202,6 @@ function initCalendar() {
   let month = new Date().getMonth();
   const today = new Date();
 
-  // Build event map keyed by YYYY-MM-DD
   const eventMap = {};
   EVENTS.forEach((ev) => {
     if (!eventMap[ev.date]) eventMap[ev.date] = [];
@@ -174,7 +222,6 @@ function initCalendar() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const daysInPrev = new Date(year, month, 0).getDate();
 
-    // Prev month fill
     for (let i = firstDay - 1; i >= 0; i--) {
       const d = document.createElement('div');
       d.className = 'cal-day other-month';
@@ -182,7 +229,6 @@ function initCalendar() {
       grid.appendChild(d);
     }
 
-    // Current month
     for (let d = 1; d <= daysInMonth; d++) {
       const key = dateKey(year, month, d);
       const div = document.createElement('div');
@@ -203,7 +249,6 @@ function initCalendar() {
       grid.appendChild(div);
     }
 
-    // Next month fill
     const total = firstDay + daysInMonth;
     const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
     for (let d = 1; d <= remainder; d++) {
@@ -230,7 +275,7 @@ function initCalendar() {
           </div>
           <div class="event-info">
             <h4>${ev.title} <span class="event-type-badge ${ev.type}">${ev.type}</span></h4>
-            <span>📍 ${ev.location}</span>
+            <span>Location: ${ev.location}</span>
           </div>
         </div>
       `;
@@ -250,7 +295,7 @@ function initCalendar() {
           </div>
           <div class="event-info">
             <h4>${ev.title} <span class="event-type-badge ${ev.type}">${ev.type}</span></h4>
-            <span>📍 ${ev.location}</span>
+            <span>Location: ${ev.location}</span>
           </div>
         </div>
       `;
@@ -296,7 +341,6 @@ function initCounters() {
 
 // ── GSAP scroll reveal ─────────────────────────────────────
 function initScrollAnimations() {
-  // Section headers
   gsap.utils.toArray('.section-header').forEach((el) => {
     gsap.fromTo(el,
       { opacity: 0, y: 40 },
@@ -307,7 +351,6 @@ function initScrollAnimations() {
     );
   });
 
-  // About text
   gsap.fromTo('.about-text',
     { opacity: 0, x: -40 },
     {
@@ -325,6 +368,161 @@ function initScrollAnimations() {
   );
 }
 
+// ── Join Hub Modal ─────────────────────────────────────────
+function initJoinHubModal() {
+  const overlay = document.getElementById('join-hub-overlay');
+  const closeBtn = document.getElementById('join-hub-close');
+  const form     = document.getElementById('join-hub-form');
+  const submitBtn = document.getElementById('join-hub-submit');
+
+  // Open via hero "Explore Opportunities" button
+  // We intercept the click, open the modal, then let scroll happen after close
+  const heroExploreBtn = document.querySelector('.hero-cta-group .btn-primary');
+  if (heroExploreBtn) {
+    heroExploreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      clearFormStatus('join-hub-status');
+      form.reset();
+      openModal('join-hub-overlay');
+    });
+  }
+
+  // Also expose a global opener so nav CTA can trigger it
+  document.getElementById('open-join-hub')?.addEventListener('click', () => {
+    clearFormStatus('join-hub-status');
+    form.reset();
+    openModal('join-hub-overlay');
+  });
+
+  // Close handlers
+  closeBtn.addEventListener('click', () => closeModal('join-hub-overlay'));
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal('join-hub-overlay');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal('join-hub-overlay');
+  });
+
+  // Submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearFormStatus('join-hub-status');
+
+    const name   = form.querySelector('#jh-name').value.trim();
+    const email  = form.querySelector('#jh-email').value.trim();
+    const role   = form.querySelector('#jh-role').value;
+    const county = form.querySelector('#jh-county').value.trim();
+
+    if (!name || !email || !role || !county) {
+      setFormStatus('join-hub-status', 'error', 'Please fill in all fields.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    const result = await joinHub({ name, email, role, county });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Join the Hub';
+
+    if (result.ok) {
+      setFormStatus('join-hub-status', 'success', 'Welcome to Ankino Youth Hub. You are registered.');
+      form.reset();
+      setTimeout(() => closeModal('join-hub-overlay'), 2200);
+    } else {
+      setFormStatus('join-hub-status', 'error', 'Something went wrong. Please try again.');
+    }
+  });
+}
+
+// ── Register Interest Modal ────────────────────────────────
+function initRegisterInterestModal() {
+  const overlay  = document.getElementById('register-interest-overlay');
+  const closeBtn = document.getElementById('register-interest-close');
+  const form     = document.getElementById('register-interest-form');
+  const submitBtn = document.getElementById('register-interest-submit');
+
+  closeBtn.addEventListener('click', () => closeModal('register-interest-overlay'));
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal('register-interest-overlay');
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearFormStatus('register-interest-status');
+
+    const name        = form.querySelector('#ri-name').value.trim();
+    const email       = form.querySelector('#ri-email').value.trim();
+    const phone       = form.querySelector('#ri-phone').value.trim();
+    const opportunity = form.querySelector('#ri-opp-title').value;
+    const type        = form.querySelector('#ri-opp-type').value;
+
+    if (!name || !email) {
+      setFormStatus('register-interest-status', 'error', 'Name and email are required.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    const result = await registerInterest({ name, email, phone, opportunity, type });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Register Interest';
+
+    if (result.ok) {
+      setFormStatus('register-interest-status', 'success', 'Interest registered. We will be in touch.');
+      form.reset();
+      setTimeout(() => closeModal('register-interest-overlay'), 2200);
+    } else {
+      setFormStatus('register-interest-status', 'error', 'Could not save. Please try again.');
+    }
+  });
+}
+
+// ── Newsletter form (footer) ───────────────────────────────
+function initNewsletter() {
+  const form   = document.querySelector('.newsletter-form');
+  const input  = form?.querySelector('input[type="email"]');
+  const button = form?.querySelector('button');
+  if (!form || !input || !button) return;
+
+  // Add status element
+  const status = document.createElement('div');
+  status.className = 'nl-status';
+  form.appendChild(status);
+
+  button.addEventListener('click', async () => {
+    const email = input.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status.textContent = 'Enter a valid email address.';
+      status.className = 'nl-status visible';
+      return;
+    }
+
+    form.classList.add('loading');
+    button.textContent = '...';
+
+    const result = await subscribeNewsletter(email);
+
+    form.classList.remove('loading');
+    button.textContent = '';
+    button.innerHTML = '&#10003;';
+
+    if (result.ok) {
+      status.textContent = 'Subscribed. You are on the list.';
+      status.className = 'nl-status visible';
+      input.value = '';
+    } else {
+      status.textContent = 'Could not subscribe. Try again.';
+      status.className = 'nl-status visible';
+      button.textContent = '';
+      button.innerHTML = '&rarr;';
+    }
+  });
+}
+
 // ── Boot ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initCanvases();
@@ -335,6 +533,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initCounters();
   initScrollAnimations();
   initChatbot();
+  initJoinHubModal();
+  initRegisterInterestModal();
+  initNewsletter();
+
+  // ── Auth: navbar + audience node clicks ───────────────
+  initAuthNavbar();          // sets up Sign In button, user chip, logout
+  initAudienceNodeAuth();    // makes audience nodes open the auth modal
+
+  // When profile changes, update chatbot persona
+  onAuthStateChange((_user, profile) => {
+    if (profile) updateChatbotProfile(profile);
+  });
 
   // Seed initial chatbot suggestion chips
   const initialChips = document.getElementById('initial-chips');

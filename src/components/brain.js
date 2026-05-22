@@ -229,6 +229,29 @@ export function respond(input) {
   return response;
 }
 
+// ── Build OpenAI-style messages[] for Gemini/Claude API ──
+/**
+ * Returns the last N conversation turns formatted as:
+ * [{ role: 'user', content: '...' }, { role: 'assistant', content: '...' }, ...]
+ * Ready to send directly to /api/ai/chat.
+ */
+export function buildMessages(newInput, maxTurns = 6) {
+  const messages = [];
+
+  // Convert stored history (pruned already by pruneHistory)
+  for (const turn of ctx.history.slice(-maxTurns)) {
+    messages.push({
+      role:    turn.role === 'bot' ? 'assistant' : 'user',
+      content: turn.text,
+    });
+  }
+
+  // Append the current user input
+  messages.push({ role: 'user', content: newInput });
+
+  return messages;
+}
+
 // ── Diagnostics (dev console) ─────────────────────────────
 export function getCacheStats()   { return responseCache.stats(); }
 export function getContextState() { return { ...ctx, historyLength: ctx.history.length }; }

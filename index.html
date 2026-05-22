@@ -23,7 +23,29 @@
       <li><a href="#calendar">Events</a></li>
       <li><a href="#about">About</a></li>
     </ul>
-    <button class="nav-cta" id="open-chat">Ask AI <span class="cta-dot"></span></button>
+    <div class="nav-actions">
+      <button class="nav-cta" id="open-chat">Ask AI <span class="cta-dot"></span></button>
+      <!-- Login button (shown when signed out) -->
+      <button class="nav-login-btn" id="nav-login-btn" aria-label="Sign in">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Sign In
+      </button>
+      <!-- User chip (shown when signed in) -->
+      <div class="nav-user-chip hidden" id="nav-user-chip" style="--profile-color: #00d4ff">
+        <div class="nav-user-avatar" id="nav-user-avatar">?</div>
+        <span class="nav-user-name" id="nav-user-name">Member</span>
+        <button class="nav-logout-btn" id="nav-logout-btn" aria-label="Sign out" title="Sign out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
@@ -266,6 +288,75 @@
     </svg>
     <span class="fab-badge">AI</span>
   </button>
+
+  <!-- ═══════════════ JOIN HUB MODAL ═══════════════ -->
+  <div class="modal-overlay" id="join-hub-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="join-hub-title">
+      <button class="modal-close" id="join-hub-close" aria-label="Close">&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">// JOIN THE HUB</span>
+        <h3 id="join-hub-title">Become a Member</h3>
+        <p>Connect with Kenya's youth tech community — developers, creators, gamers and founders.</p>
+      </div>
+      <form class="modal-form" id="join-hub-form" novalidate>
+        <div class="form-group">
+          <label for="jh-name">Full Name</label>
+          <input type="text" id="jh-name" name="name" placeholder="e.g. Ian Kinoti" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label for="jh-email">Email Address</label>
+          <input type="email" id="jh-email" name="email" placeholder="kinotiian12@gmail.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="jh-role">I am a</label>
+          <select id="jh-role" name="role" required>
+            <option value="" disabled selected>Select your role</option>
+            <option value="Developer">Developer</option>
+            <option value="Creator">Creator</option>
+            <option value="Gamer">Gamer</option>
+            <option value="Founder">Founder</option>
+            <option value="Student">Student</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="jh-county">County</label>
+          <input type="text" id="jh-county" name="county" placeholder="e.g. Nairobi" required />
+        </div>
+        <div class="form-status" id="join-hub-status" aria-live="polite"></div>
+        <button type="submit" class="btn-primary form-submit" id="join-hub-submit">Join the Hub</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════ REGISTER INTEREST MODAL ═══════════════ -->
+  <div class="modal-overlay" id="register-interest-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="ri-title">
+      <button class="modal-close" id="register-interest-close" aria-label="Close">&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">// REGISTER INTEREST</span>
+        <h3 id="ri-title"></h3>
+        <p>Leave your details and we will notify you when applications open.</p>
+      </div>
+      <form class="modal-form" id="register-interest-form" novalidate>
+        <input type="hidden" id="ri-opp-title" name="opportunity" />
+        <input type="hidden" id="ri-opp-type" name="type" />
+        <div class="form-group">
+          <label for="ri-name">Full Name</label>
+          <input type="text" id="ri-name" name="name" placeholder="e.g. Ian Kinoti" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label for="ri-email">Email Address</label>
+          <input type="email" id="ri-email" name="email" placeholder="kinotiian12@gmail.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="ri-phone">Phone Number</label>
+          <input type="tel" id="ri-phone" name="phone" placeholder="07XX XXX XXX" autocomplete="tel" />
+        </div>
+        <div class="form-status" id="register-interest-status" aria-live="polite"></div>
+        <button type="submit" class="btn-primary form-submit" id="register-interest-submit">Register Interest</button>
+      </form>
+    </div>
+  </div>
 
   <script type="module" src="/src/main.js"></script>
 </body>
