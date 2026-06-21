@@ -337,7 +337,7 @@ export class EcosystemCanvas {
     this.time += 0.016;
 
     // Clear
-    ctx.fillStyle = '#050d05';
+    ctx.fillStyle = '#171717';
     ctx.fillRect(0, 0, w, h);
 
     // Matatu geometric overlay
@@ -384,7 +384,7 @@ export class EcosystemCanvas {
           ctx.beginPath();
           ctx.moveTo(pts[i].x, pts[i].y);
           ctx.lineTo(pts[j].x, pts[j].y);
-          ctx.strokeStyle = `rgba(0,177,64,${a})`;
+          ctx.strokeStyle = `rgba(33,241,168,${a})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         }

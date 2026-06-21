@@ -3,13 +3,13 @@
 // ═══════════════════════════════════════════════════════════
 
 export const COLORS = {
-  green:  '#00B140',
-  neon:   '#00FF66',
-  gold:   '#FFD700',
-  orange: '#FF6B35',
-  red:    '#E31837',
-  dark:   '#050d05',
-  darker: '#020702',
+  green:  '#21F1A8',
+  neon:   '#5FFFC4',
+  gold:   '#A8F7DC',
+  orange: '#0DBE83',
+  red:    '#053A2C',
+  dark:   '#171717',
+  darker: '#0E0E0E',
 };
 
 // ── Opportunities Data ────────────────────────────────────

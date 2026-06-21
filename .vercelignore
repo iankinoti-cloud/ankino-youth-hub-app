@@ -1,0 +1,8 @@
+# Azure Functions-specific files — these use the Azure SDK (app.http
+# registration, no default export) and would fail if Vercel tried to
+# bundle them as serverless functions. The Azure deploy-azure.yml
+# workflow still uses the full api/ folder independently of Vercel.
+api/src
+api/host.json
+api/package.json
+api/local.settings.json
